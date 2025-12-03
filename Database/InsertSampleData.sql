@@ -32,9 +32,9 @@ GO
 
 -- Добавление заказов
 INSERT INTO Orders (OrderNumber, CustomerID, OrderDate, Status, Notes) VALUES
-('ORD-2024-001', 1, '2024-01-15', 'Выполнен', 'Срочный заказ'),
-('ORD-2024-002', 2, '2024-01-16', 'В обработке', NULL),
-('ORD-2024-003', 3, '2024-01-17', 'Новый', NULL);
+('ORD-2024-001', 1, CAST('2024-01-15' AS DATETIME), 'Выполнен', 'Срочный заказ'),
+('ORD-2024-002', 2, CAST('2024-01-16' AS DATETIME), 'В обработке', NULL),
+('ORD-2024-003', 3, CAST('2024-01-17' AS DATETIME), 'Новый', NULL);
 GO
 
 -- Добавление позиций заказов
@@ -49,7 +49,7 @@ GO
 
 -- Добавление продаж
 INSERT INTO Sales (SaleNumber, OrderID, CustomerID, SaleDate, TotalAmount, PaymentMethod, Notes) VALUES
-('SALE-2024-001', 1, 1, '2024-01-15', 3550.00, 'Наличные', 'Оплачено полностью');
+('SALE-2024-001', 1, 1, CAST('2024-01-15' AS DATETIME), 3550.00, 'Наличные', 'Оплачено полностью');
 GO
 
 -- Добавление позиций продаж
@@ -61,8 +61,8 @@ GO
 
 -- Добавление поставок
 INSERT INTO Deliveries (DeliveryNumber, SupplierID, DeliveryDate, TotalAmount, Status, Notes) VALUES
-('DEL-2024-001', 1, '2024-01-10', 50000.00, 'Получено', 'Первая поставка'),
-('DEL-2024-002', 2, '2024-01-12', 35000.00, 'Получено', NULL);
+('DEL-2024-001', 1, CAST('2024-01-10' AS DATETIME), 50000.00, 'Получено', 'Первая поставка'),
+('DEL-2024-002', 2, CAST('2024-01-12' AS DATETIME), 35000.00, 'Получено', NULL);
 GO
 
 -- Добавление позиций поставок
@@ -75,5 +75,6 @@ INSERT INTO DeliveryItems (DeliveryID, ProductID, Quantity, UnitPrice, Subtotal)
 GO
 
 PRINT 'Тестовые данные успешно добавлены!';
+
 
 

@@ -143,12 +143,54 @@ namespace AutoPartsStore.Forms
             {
                 if (dgv.SelectedRows.Count > 0)
                 {
-                    var productID = (int)dgv.SelectedRows[0].Cells["ProductID"].Value;
-                    if (MessageBox.Show("Удалить товар?", "Подтверждение", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    try
                     {
-                        _dbHelper.DeleteProduct(productID);
-                        LoadData();
+                        var selectedRow = dgv.SelectedRows[0];
+                        if (selectedRow.DataBoundItem is Product product)
+                        {
+                            if (MessageBox.Show($"Удалить товар '{product.ProductName}'?", "Подтверждение", 
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                            {
+                                if (_dbHelper.DeleteProduct(product.ProductID))
+                                {
+                                    MessageBox.Show("Товар успешно удален!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    LoadData();
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Ошибка при удалении товара. Возможно, товар используется в заказах или продажах.", 
+                                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Альтернативный способ получения ID
+                            var productID = Convert.ToInt32(selectedRow.Cells["ProductID"].Value);
+                            if (MessageBox.Show("Удалить товар?", "Подтверждение", 
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                            {
+                                if (_dbHelper.DeleteProduct(productID))
+                                {
+                                    MessageBox.Show("Товар успешно удален!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    LoadData();
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Ошибка при удалении товара. Возможно, товар используется в заказах или продажах.", 
+                                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                            }
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка при удалении: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выберите товар для удаления!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             };
 
@@ -156,10 +198,24 @@ namespace AutoPartsStore.Forms
             {
                 if (_authService.IsAdmin && e.RowIndex >= 0)
                 {
-                    var productID = (int)dgv.Rows[e.RowIndex].Cells["ProductID"].Value;
-                    var product = _dbHelper.GetProduct(productID);
-                    if (product != null)
-                        ShowProductForm(product);
+                    try
+                    {
+                        if (dgv.Rows[e.RowIndex].DataBoundItem is Product product)
+                        {
+                            ShowProductForm(product);
+                        }
+                        else
+                        {
+                            var productID = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["ProductID"].Value);
+                            var productFromDb = _dbHelper.GetProduct(productID);
+                            if (productFromDb != null)
+                                ShowProductForm(productFromDb);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка при открытии товара: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             };
 
@@ -240,7 +296,7 @@ namespace AutoPartsStore.Forms
             {
                 Dock = DockStyle.Fill,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                ReadOnly = !_authService.IsAdmin,
+                ReadOnly = true,
                 AllowUserToAddRows = false
             };
 
@@ -255,6 +311,31 @@ namespace AutoPartsStore.Forms
             };
             btnAdd.FlatAppearance.BorderSize = 0;
             btnAdd.Click += (s, e) => ShowCustomerForm(null);
+
+            dgv.CellDoubleClick += (s, e) =>
+            {
+                if (_authService.IsAdmin && e.RowIndex >= 0)
+                {
+                    try
+                    {
+                        if (dgv.Rows[e.RowIndex].DataBoundItem is Customer customer)
+                        {
+                            ShowCustomerForm(customer);
+                        }
+                        else
+                        {
+                            var customerID = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["CustomerID"].Value);
+                            var customerFromDb = _dbHelper.GetCustomer(customerID);
+                            if (customerFromDb != null)
+                                ShowCustomerForm(customerFromDb);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка при открытии клиента: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            };
 
             panel.Controls.Add(dgv);
             panel.Controls.Add(btnAdd);
@@ -312,8 +393,13 @@ namespace AutoPartsStore.Forms
 
         private void ShowProductForm(Product? product)
         {
-            // Здесь будет форма редактирования товара
-            MessageBox.Show("Форма редактирования товара будет реализована", "Информация");
+            using (var form = new ProductForm(_dbHelper, product))
+            {
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    LoadData();
+                }
+            }
         }
 
         private void ShowOrderForm(Order? order)
@@ -330,8 +416,13 @@ namespace AutoPartsStore.Forms
 
         private void ShowCustomerForm(Customer? customer)
         {
-            // Здесь будет форма редактирования клиента
-            MessageBox.Show("Форма редактирования клиента будет реализована", "Информация");
+            using (var form = new CustomerForm(_dbHelper, customer))
+            {
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    LoadData();
+                }
+            }
         }
 
         private void ShowUsersForm()

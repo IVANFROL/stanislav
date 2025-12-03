@@ -116,3 +116,4 @@ SELECT COUNT(*) as CustomersCount FROM Customers;
 Если запросы выполняются успешно, база данных настроена правильно.
 
 
+

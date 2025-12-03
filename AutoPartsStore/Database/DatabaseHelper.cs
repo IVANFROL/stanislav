@@ -267,6 +267,70 @@ namespace AutoPartsStore.Database
             }
         }
 
+        public bool UpdateCustomer(Customer customer)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var query = @"
+                    UPDATE Customers 
+                    SET FirstName = @FirstName, LastName = @LastName, 
+                        Phone = @Phone, Email = @Email, 
+                        Address = @Address, City = @City
+                    WHERE CustomerID = @CustomerID";
+                
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@CustomerID", customer.CustomerID);
+                    command.Parameters.AddWithValue("@FirstName", customer.FirstName);
+                    command.Parameters.AddWithValue("@LastName", customer.LastName);
+                    command.Parameters.AddWithValue("@Phone", (object?)customer.Phone ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Email", (object?)customer.Email ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Address", (object?)customer.Address ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@City", (object?)customer.City ?? DBNull.Value);
+                    
+                    return command.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public Customer? GetCustomer(int customerID)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var query = @"
+                    SELECT CustomerID, FirstName, LastName, Phone, Email, Address, City, 
+                           RegistrationDate, IsActive
+                    FROM Customers
+                    WHERE CustomerID = @CustomerID";
+                
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@CustomerID", customerID);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new Customer
+                            {
+                                CustomerID = reader.GetInt32("CustomerID"),
+                                FirstName = reader.GetString("FirstName"),
+                                LastName = reader.GetString("LastName"),
+                                Phone = reader.IsDBNull("Phone") ? "" : reader.GetString("Phone"),
+                                Email = reader.IsDBNull("Email") ? "" : reader.GetString("Email"),
+                                Address = reader.IsDBNull("Address") ? "" : reader.GetString("Address"),
+                                City = reader.IsDBNull("City") ? "" : reader.GetString("City"),
+                                RegistrationDate = reader.GetDateTime("RegistrationDate"),
+                                IsActive = reader.GetBoolean("IsActive")
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         // Методы для работы с поставщиками
         public List<Supplier> GetSuppliers()
         {
