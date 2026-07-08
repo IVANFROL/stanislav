@@ -208,20 +208,19 @@ ON OrderItems
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
-    DECLARE @OrderID INT;
-    
-    IF EXISTS (SELECT * FROM inserted)
-        SET @OrderID = (SELECT OrderID FROM inserted);
-    ELSE IF EXISTS (SELECT * FROM deleted)
-        SET @OrderID = (SELECT OrderID FROM deleted);
-    
-    UPDATE Orders
+    -- Обновляем все заказы, которые были затронуты
+    UPDATE o
     SET TotalAmount = (
         SELECT ISNULL(SUM(Subtotal), 0)
-        FROM OrderItems
-        WHERE OrderID = @OrderID
+        FROM OrderItems oi
+        WHERE oi.OrderID = o.OrderID
     )
-    WHERE OrderID = @OrderID;
+    FROM Orders o
+    WHERE o.OrderID IN (
+        SELECT DISTINCT OrderID FROM inserted
+        UNION
+        SELECT DISTINCT OrderID FROM deleted
+    );
 END;
 GO
 

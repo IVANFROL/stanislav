@@ -3,29 +3,30 @@ using AutoPartsStore.Models;
 
 namespace AutoPartsStore.Forms
 {
-    public partial class CustomerForm : Form
+    public partial class SupplierForm : Form
     {
         private readonly DatabaseHelper _dbHelper;
-        private readonly Customer? _customer;
-        private TextBox? _txtFirstName;
-        private TextBox? _txtLastName;
+        private readonly Supplier? _supplier;
+        private TextBox? _txtCompanyName;
+        private TextBox? _txtContactPerson;
         private MaskedTextBox? _txtPhone;
         private TextBox? _txtEmail;
         private TextBox? _txtAddress;
         private TextBox? _txtCity;
+        private TextBox? _txtCountry;
 
-        public CustomerForm(DatabaseHelper dbHelper, Customer? customer = null)
+        public SupplierForm(DatabaseHelper dbHelper, Supplier? supplier = null)
         {
             _dbHelper = dbHelper;
-            _customer = customer;
+            _supplier = supplier;
             InitializeComponent();
             LoadData();
         }
 
         private void InitializeComponent()
         {
-            this.Text = _customer == null ? "Добавить клиента" : "Редактировать клиента";
-            this.Size = new Size(500, 350);
+            this.Text = _supplier == null ? "Добавить поставщика" : "Редактировать поставщика";
+            this.Size = new Size(550, 400);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -36,22 +37,22 @@ namespace AutoPartsStore.Forms
                 Dock = DockStyle.Fill,
                 Padding = new Padding(20),
                 ColumnCount = 2,
-                RowCount = 8
+                RowCount = 9
             };
-            panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140));
             panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
             int row = 0;
 
-            // Имя
-            panel.Controls.Add(new Label { Text = "Имя:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
-            _txtFirstName = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
-            panel.Controls.Add(_txtFirstName, 1, row++);
+            // Название компании
+            panel.Controls.Add(new Label { Text = "Название компании:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
+            _txtCompanyName = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
+            panel.Controls.Add(_txtCompanyName, 1, row++);
 
-            // Фамилия
-            panel.Controls.Add(new Label { Text = "Фамилия:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
-            _txtLastName = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
-            panel.Controls.Add(_txtLastName, 1, row++);
+            // Контактное лицо
+            panel.Controls.Add(new Label { Text = "Контактное лицо:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
+            _txtContactPerson = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
+            panel.Controls.Add(_txtContactPerson, 1, row++);
 
             // Телефон
             panel.Controls.Add(new Label { Text = "Телефон:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
@@ -66,14 +67,6 @@ namespace AutoPartsStore.Forms
             // Email
             panel.Controls.Add(new Label { Text = "Email:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
             _txtEmail = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
-            _txtEmail.Leave += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(_txtEmail.Text) && !_txtEmail.Text.Contains("@"))
-                {
-                    MessageBox.Show("Введите корректный email адрес!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    _txtEmail.Focus();
-                }
-            };
             panel.Controls.Add(_txtEmail, 1, row++);
 
             // Адрес
@@ -86,6 +79,11 @@ namespace AutoPartsStore.Forms
             _txtCity = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
             panel.Controls.Add(_txtCity, 1, row++);
 
+            // Страна
+            panel.Controls.Add(new Label { Text = "Страна:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
+            _txtCountry = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3), Text = "Россия" };
+            panel.Controls.Add(_txtCountry, 1, row++);
+
             // Кнопки
             var btnPanel = new Panel { Dock = DockStyle.Fill, Height = 50 };
             var btnSave = new Button
@@ -93,7 +91,7 @@ namespace AutoPartsStore.Forms
                 Text = "Сохранить",
                 DialogResult = DialogResult.OK,
                 Anchor = AnchorStyles.Right,
-                Location = new Point(300, 10),
+                Location = new Point(350, 10),
                 Size = new Size(100, 35),
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
@@ -106,7 +104,7 @@ namespace AutoPartsStore.Forms
                 Text = "Отмена",
                 DialogResult = DialogResult.Cancel,
                 Anchor = AnchorStyles.Right,
-                Location = new Point(410, 10),
+                Location = new Point(460, 10),
                 Size = new Size(100, 35)
             };
 
@@ -124,70 +122,68 @@ namespace AutoPartsStore.Forms
 
         private void LoadData()
         {
-            if (_customer != null)
+            if (_supplier != null)
             {
-                _txtFirstName!.Text = _customer.FirstName;
-                _txtLastName!.Text = _customer.LastName;
-                if (!string.IsNullOrEmpty(_customer.Phone))
+                _txtCompanyName!.Text = _supplier.CompanyName;
+                _txtContactPerson!.Text = _supplier.ContactPerson;
+                if (!string.IsNullOrEmpty(_supplier.Phone))
                 {
-                    var phone = _customer.Phone;
+                    var phone = _supplier.Phone;
                     if (!phone.StartsWith("+7"))
                     {
                         phone = "+7 " + phone;
                     }
                     _txtPhone!.Text = phone;
                 }
-                _txtEmail!.Text = _customer.Email;
-                _txtAddress!.Text = _customer.Address;
-                _txtCity!.Text = _customer.City;
+                _txtEmail!.Text = _supplier.Email;
+                _txtAddress!.Text = _supplier.Address;
+                _txtCity!.Text = _supplier.City;
+                _txtCountry!.Text = _supplier.Country;
             }
         }
 
         private void BtnSave_Click(object? sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(_txtFirstName?.Text))
+            if (string.IsNullOrWhiteSpace(_txtCompanyName?.Text))
             {
-                MessageBox.Show("Введите имя!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Введите название компании!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(_txtLastName?.Text))
+            var supplier = new Supplier
             {
-                MessageBox.Show("Введите фамилию!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var customer = new Customer
-            {
-                CustomerID = _customer?.CustomerID ?? 0,
-                FirstName = _txtFirstName!.Text,
-                LastName = _txtLastName!.Text,
+                SupplierID = _supplier?.SupplierID ?? 0,
+                CompanyName = _txtCompanyName!.Text,
+                ContactPerson = _txtContactPerson?.Text ?? "",
                 Phone = _txtPhone?.Text?.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "") ?? "",
                 Email = _txtEmail?.Text ?? "",
                 Address = _txtAddress?.Text ?? "",
-                City = _txtCity?.Text ?? ""
+                City = _txtCity?.Text ?? "",
+                Country = _txtCountry?.Text ?? "Россия"
             };
 
             bool success;
-            if (_customer == null)
+            if (_supplier == null)
             {
-                success = _dbHelper.AddCustomer(customer);
+                success = _dbHelper.AddSupplier(supplier);
             }
             else
             {
-                success = _dbHelper.UpdateCustomer(customer);
+                success = _dbHelper.UpdateSupplier(supplier);
             }
 
             if (success)
             {
-                MessageBox.Show(_customer == null ? "Клиент успешно добавлен!" : "Клиент успешно обновлен!", 
+                MessageBox.Show(_supplier == null ? "Поставщик успешно добавлен!" : "Поставщик успешно обновлен!",
                     "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
             }
             else
             {
-                MessageBox.Show("Ошибка при сохранении клиента!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Ошибка при сохранении поставщика!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
 }
+
+

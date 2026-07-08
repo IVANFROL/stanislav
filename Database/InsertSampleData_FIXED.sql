@@ -1,8 +1,10 @@
--- Заполнение базы данных тестовыми данными
+-- Заполнение базы данных тестовыми данными (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+-- Используйте этот файл, если InsertSampleData.sql не работает
+
 USE AutoPartsStore;
 GO
 
--- Установка формата даты для совместимости
+-- Установка формата даты
 SET DATEFORMAT ymd;
 GO
 
@@ -34,11 +36,18 @@ INSERT INTO Products (ProductCode, ProductName, CategoryID, SupplierID, Descript
 ('INT002', 'Чехлы на сиденья', 7, 1, 'Чехлы на передние сиденья', 3500.00, 2200.00, 15, 5);
 GO
 
--- Добавление заказов
+-- Добавление заказов (используем GETDATE() с вычитанием дней для надежности)
 INSERT INTO Orders (OrderNumber, CustomerID, OrderDate, Status, Notes) VALUES
-('ORD-2024-001', 1, CONVERT(DATETIME, '2024-01-15 10:00:00', 120), 'Выполнен', 'Срочный заказ'),
-('ORD-2024-002', 2, CONVERT(DATETIME, '2024-01-16 10:00:00', 120), 'В обработке', NULL),
-('ORD-2024-003', 3, CONVERT(DATETIME, '2024-01-17 10:00:00', 120), 'Новый', NULL);
+('ORD-2024-001', 1, DATEADD(day, -350, GETDATE()), 'Выполнен', 'Срочный заказ'),
+('ORD-2024-002', 2, DATEADD(day, -349, GETDATE()), 'В обработке', NULL),
+('ORD-2024-003', 3, DATEADD(day, -348, GETDATE()), 'Новый', NULL);
+GO
+
+-- Проверка, что заказы созданы
+IF NOT EXISTS (SELECT 1 FROM Orders WHERE OrderID = 1)
+BEGIN
+    PRINT 'ОШИБКА: Заказ с ID=1 не создан!';
+END
 GO
 
 -- Добавление позиций заказов
@@ -53,7 +62,14 @@ GO
 
 -- Добавление продаж
 INSERT INTO Sales (SaleNumber, OrderID, CustomerID, SaleDate, TotalAmount, PaymentMethod, Notes) VALUES
-('SALE-2024-001', 1, 1, CONVERT(DATETIME, '2024-01-15 14:00:00', 120), 3550.00, 'Наличные', 'Оплачено полностью');
+('SALE-2024-001', 1, 1, DATEADD(day, -350, GETDATE()), 3550.00, 'Наличные', 'Оплачено полностью');
+GO
+
+-- Проверка, что продажа создана
+IF NOT EXISTS (SELECT 1 FROM Sales WHERE SaleID = 1)
+BEGIN
+    PRINT 'ОШИБКА: Продажа с ID=1 не создана!';
+END
 GO
 
 -- Добавление позиций продаж
@@ -65,8 +81,8 @@ GO
 
 -- Добавление поставок
 INSERT INTO Deliveries (DeliveryNumber, SupplierID, DeliveryDate, TotalAmount, Status, Notes) VALUES
-('DEL-2024-001', 1, CONVERT(DATETIME, '2024-01-10 09:00:00', 120), 50000.00, 'Получено', 'Первая поставка'),
-('DEL-2024-002', 2, CONVERT(DATETIME, '2024-01-12 09:00:00', 120), 35000.00, 'Получено', NULL);
+('DEL-2024-001', 1, DATEADD(day, -355, GETDATE()), 50000.00, 'Получено', 'Первая поставка'),
+('DEL-2024-002', 2, DATEADD(day, -353, GETDATE()), 35000.00, 'Получено', NULL);
 GO
 
 -- Добавление позиций поставок
@@ -79,6 +95,21 @@ INSERT INTO DeliveryItems (DeliveryID, ProductID, Quantity, UnitPrice, Subtotal)
 GO
 
 PRINT 'Тестовые данные успешно добавлены!';
+PRINT 'Проверка данных:';
 
+DECLARE @CustomersCount INT;
+DECLARE @ProductsCount INT;
+DECLARE @OrdersCount INT;
+DECLARE @SalesCount INT;
 
+SELECT @CustomersCount = COUNT(*) FROM Customers;
+SELECT @ProductsCount = COUNT(*) FROM Products;
+SELECT @OrdersCount = COUNT(*) FROM Orders;
+SELECT @SalesCount = COUNT(*) FROM Sales;
+
+PRINT 'Клиентов: ' + CAST(@CustomersCount AS VARCHAR);
+PRINT 'Товаров: ' + CAST(@ProductsCount AS VARCHAR);
+PRINT 'Заказов: ' + CAST(@OrdersCount AS VARCHAR);
+PRINT 'Продаж: ' + CAST(@SalesCount AS VARCHAR);
+GO
 

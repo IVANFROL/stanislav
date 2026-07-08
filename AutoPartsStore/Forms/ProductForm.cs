@@ -49,7 +49,8 @@ namespace AutoPartsStore.Forms
 
             // Код товара
             panel.Controls.Add(new Label { Text = "Код товара:", Anchor = AnchorStyles.Left | AnchorStyles.Right }, 0, row);
-            _txtProductCode = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3) };
+            _txtProductCode = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(3), MaxLength = 50 };
+            _txtProductCode.CharacterCasing = CharacterCasing.Upper;
             panel.Controls.Add(_txtProductCode, 1, row++);
 
             // Название
@@ -278,3 +279,6 @@ namespace AutoPartsStore.Forms
         }
     }
 }
+
+
+
